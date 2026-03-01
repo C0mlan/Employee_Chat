@@ -1,0 +1,65 @@
+# ----------------------------
+# Python & Django
+# ----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# SQLite (we’re using Postgres, but exclude in case someone uses SQLite locally)
+db.sqlite3
+
+# Logs
+*.log
+*.out
+*.err
+
+# Django media & static files
+/media/
+media/
+staticfiles/
+static/
+*.collectstatic/
+
+# ----------------------------
+# Virtual Environment
+# ----------------------------
+venv/
+ENV/
+env/
+.venv/
+
+# ----------------------------
+# Environment / Secrets
+# ----------------------------
+.env
+*.env
+.env.local
+.env.production
+.env.development
+
+# ----------------------------
+# IDE / Editors
+# ----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------------
+# Docker
+# ----------------------------
+*.pid
+*.seed
+*.pid.lock
+
+# ----------------------------
+# System Files
+# ----------------------------
+.DS_Store
+Thumbs.db
