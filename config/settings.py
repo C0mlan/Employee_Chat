@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -10,6 +11,20 @@ SECRET_KEY = 'django-insecure-l^u%blr5+r0qjvn64af*&i6w*m7x%!_n!%0meogo1$+71d0*5c
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"] #allow everything for now in dev
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
 
 # ---------------------------------
 # Application definition
