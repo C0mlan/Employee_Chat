@@ -1,10 +1,10 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from ..serializers.auth_serializer import RegisterSerializer, LoginSerializer
+from ..serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password
-from ..services.auth_service import generate_jwt
+from ..services import generate_jwt, is_token_valid, invalidate_jwt
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import authenticate
 
@@ -56,4 +56,14 @@ class LoginView(APIView):
            
         }, status=status.HTTP_200_OK)
 
-        
+
+class LogoutView(APIView):
+    def post(self, request):
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return Response({"message": "Authorization header missing"}, status=status.HTTP_400_BAD_REQUEST)
+        token = auth_header.split(" ")[1]
+        if is_token_valid(token):
+            invalidate_jwt(token)
+            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
+        return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)

@@ -16,3 +16,11 @@ def generate_jwt(user):
     token = str(RefreshToken.for_user(user).access_token)
     redis_client.setex(token, ttl, str(user.id))
     return token
+
+def is_token_valid(token: str) -> bool:
+
+    return redis_client.exists(token) == 1
+
+def invalidate_jwt(token: str):
+    redis_client.delete(token)
+    
