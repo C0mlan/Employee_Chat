@@ -4,7 +4,7 @@ from ..serializers import RegisterSerializer, LoginSerializer
 from django.contrib.auth import get_user_model
 from rest_framework.views import APIView
 from django.contrib.auth.hashers import check_password
-from ..services import generate_jwt, is_token_valid, invalidate_jwt
+from ..services import generate_jwt, invalidate_jwt
 from rest_framework_simplejwt.tokens import AccessToken
 from django.contrib.auth import authenticate
 
@@ -43,14 +43,12 @@ class LoginView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-
         token = generate_jwt(user)
         
-        
-
         return Response({
             "message": "Login successful",
-            "token": token,
+            "access": token["access_token"],
+            "refresh": token["refresh_token"],
             "email": user.email,
             "Emp_id": user.emp_id
            
@@ -62,8 +60,9 @@ class LogoutView(APIView):
         auth_header = request.headers.get('Authorization', '')
         if not auth_header or not auth_header.startswith("Bearer "):
             return Response({"message": "Authorization header missing"}, status=status.HTTP_400_BAD_REQUEST)
-        token = auth_header.split(" ")[1]
-        if is_token_valid(token):
+        try:
+            token = auth_header.split(" ")[1]
             invalidate_jwt(token)
-            return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)
-        return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            pass
+        return Response({"message": "Logout successful"}, status=status.HTTP_200_OK)

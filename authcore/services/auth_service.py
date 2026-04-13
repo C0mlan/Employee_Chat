@@ -11,16 +11,28 @@ User = get_user_model()
 redis_client= redis.Redis(host="redis", port=6379,db=0, decode_responses=True)
 
 def generate_jwt(user):
-    ttl = int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds())
+    refresh_ttl = int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds())
+    access_ttl = int(settings.SIMPLE_JWT["ACCESS_TOKEN_LIFETIME"].total_seconds())
 
-    token = str(RefreshToken.for_user(user).access_token)
-    redis_client.setex(token, ttl, str(user.id))
-    return token
+    refresh = RefreshToken.for_user(user)
+    refresh_token = str(refresh)
+    access_token = str(refresh.access_token)
+    redis_client.setex(access_token, access_ttl, refresh_token)
+    redis_client.setex(refresh_token, refresh_ttl, str(user.id))
 
-def is_token_valid(token: str) -> bool:
+    return {
+    "access_token": access_token,
+    "refresh_token": refresh_token
+    }
 
-    return redis_client.exists(token) == 1
 
-def invalidate_jwt(token: str):
-    redis_client.delete(token)
+
+def invalidate_jwt(access_token: str):
+    refresh_token = redis_client.get(access_token)
+
+    # 2. If session exists, delete both
+    if refresh_token:
+        redis_client.delete(access_token)
+        redis_client.delete(refresh_token)
+
     
