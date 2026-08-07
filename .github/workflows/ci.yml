@@ -1,0 +1,87 @@
+name: EMPLOYEE CHAT CI
+
+on:
+  push:
+    branches: ["main", "dev"]
+
+  pull_request:
+    branches: ["main", "dev"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: empchat_db
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: empchat_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov pytest-xdist
+
+
+      # -----------------------------------------
+      # TEST STRUCTURE VALIDATION
+      # -----------------------------------------
+      - name: Validate pytest structure
+        run: |
+          echo "Checking pytest naming conventions..."
+
+          find apps -type f -name "test_*.py"
+
+      # -----------------------------------------
+      # RUN MIGRATIONS
+      # -----------------------------------------
+      - name: Run migrations
+        run: |
+          python manage.py migrate
+
+      # -----------------------------------------
+      # UNIT TESTS
+      # -----------------------------------------
+      - name: Run unit tests
+        run: |
+          pytest -m "unit" -n auto -q
+
+      # -----------------------------------------
+      # INTEGRATION TESTS
+      # -----------------------------------------
+      - name: Run integration tests
+        run: |
+          pytest -m "integration" -n auto -q
+
+      # -----------------------------------------
+      # FULL TEST + COVERAGE
+      # -----------------------------------------
+      - name: Run coverage report
+        run: |
+          pytest --cov=apps --cov=core \
+                 --cov-report=term-missing \
+                 --cov-fail-under=80
