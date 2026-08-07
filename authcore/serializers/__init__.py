@@ -1,1 +1,0 @@
-from .auth_serializer import RegisterSerializer, LoginSerializer
