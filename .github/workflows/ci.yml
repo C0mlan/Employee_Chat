@@ -54,7 +54,7 @@ jobs:
         run: |
           echo "Checking pytest naming conventions..."
 
-          find apps -type f -name "test_*.py"
+          find . -type f -name "test_*.py"
 
       # -----------------------------------------
       # RUN MIGRATIONS
