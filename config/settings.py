@@ -1,29 +1,39 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 from datetime import timedelta
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = 'django-insecure-l^u%blr5+r0qjvn64af*&i6w*m7x%!_n!%0meogo1$+71d0*5c'
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"] #allow everything for now in dev
 
+
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    # "DEFAULT_AUTHENTICATION_CLASSES": (
+        
+    #     'authcore.servicess.permission.JWTAuthentication',
+    # ),
+    
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
+
+    "EXCEPTION_HANDLER": (
+        "common.apiexceptions.authcore.custom_exception_handler"
+    )
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
 }
 
 # ---------------------------------
@@ -140,14 +150,3 @@ STATIC_URL = 'static/'
 # ---------------------------------
 CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
-
-
-# ---------------------------------
-# Email Configuration
-# ---------------------------------
-EMAIL_USE_TLS =True
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT=587
-EMAIL_HOST_USER= os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
