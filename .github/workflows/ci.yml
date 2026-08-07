@@ -30,6 +30,15 @@ jobs:
         image: redis:alpine
         ports:
           - 6379:6379
+    env:
+      DEBUG: True
+      SECRET_KEY: testsecret
+      POSTGRES_DB: empchat_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: 5432
+      REDIS_URL: redis://localhost:6379/0
 
     steps:
       - name: Checkout code
