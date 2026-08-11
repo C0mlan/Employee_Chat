@@ -4,3 +4,8 @@ redis==7.2.1
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
 psycopg2-binary==2.9.11
+pytest
+pytest-cov
+pytest-django
+hiredis>=2.3.0
+python-dotenv
