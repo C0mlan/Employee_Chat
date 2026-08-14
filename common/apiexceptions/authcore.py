@@ -39,3 +39,7 @@ class EmailAlreadyExists(APIException):
     default_detail = "An account with this email already exists."
     default_code = "EMAIL_ALREADY_EXISTS"
 
+class InvalidCredentials(APIException):
+    status_code = 400
+    default_detail = "The email address or password you entered is incorrect."
+    default_code = "INVALID_CREDENTIALS"

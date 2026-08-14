@@ -6,7 +6,9 @@ from common.apiexceptions.authcore import (
     EmailRequired,
     InvalidEmailFormat,
     EmailAlreadyExists,
+    InvalidCredentials
 )
+
 
 class EmailValidator:
 
@@ -44,3 +46,10 @@ class EmailValidator:
                     "employee with this email already exists."
                 }
             )
+
+    @staticmethod
+    def validate_login_email(email):
+        '''this will return exception when '''
+        if not email:
+            raise InvalidCredentials()
+        return email

@@ -1,5 +1,5 @@
 from rest_framework.views import APIView
-from .serializers import RegisterSerializer
+from .serializers import RegisterSerializer, LoginSerializer
 from .services.auth_services import AuthService
 from .services.permissions import  IsAdmin
 from rest_framework.response import Response
@@ -20,3 +20,18 @@ class RegisterEmployeeView(APIView):
                 "emp_id": user.emp_id}
             )
 
+
+class LoginView(APIView):
+    serializer_class = LoginSerializer
+    def post(self, request):
+        
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        tokens = AuthService.login_user(**serializer.validated_data)
+       
+        return AuthenticationResponses.login_successful(
+            {
+                "access": tokens["access"],
+                "refresh": tokens["refresh"],
+            }
+         )

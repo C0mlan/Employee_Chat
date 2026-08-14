@@ -2,6 +2,7 @@ import pytest
 from rest_framework.test import APIClient
 # from apps.accounts.models import User
 from django.contrib.auth import get_user_model
+from common.constants.roles import Roles
 
 User = get_user_model()
 
@@ -15,9 +16,8 @@ def api_client():
 def admin_user(db):
     return User.objects.create_user(
         email="admin@test.com",
-        password="Admin123!",
-        full_name="Admin User",
-        role="SUPER_ADMIN",
+        password="AdminPassword123!",
+        role=Roles.ADMIN,
     )
 
 
@@ -36,8 +36,10 @@ def create_user(db):
 @pytest.fixture
 def regular_user(db):
     return User.objects.create_user(
-        email="regular@example.com",
-        password="password123",
-        full_name="Regular User",
+        first_name="john",
+        last_name ="doe",
+        email="john@example.com",
+        password="StrongPassword123!",
+        role= "Employee",
         
     )
