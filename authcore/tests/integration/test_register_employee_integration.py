@@ -11,7 +11,8 @@ User = get_user_model()
 @pytest.mark.integration
 class TestRegisterEmployeeIntegration: 
 
-    def test_employee_can_register(self, api_client):
+    def test_admin_can_create_employee_account(self, api_client, admin_user):
+        api_client.force_authenticate(user=admin_user)
         register_url = reverse(RouteNames.AuthCore.REGISTER)
 
         payload = {
@@ -28,5 +29,3 @@ class TestRegisterEmployeeIntegration:
         assert response.data["response_code"] == "USER_CREATED"
         assert response.data["message"] == "Employee registered successfully."
         assert "emp_id" in response.data["data"]
-
-
