@@ -1,6 +1,6 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from authcore.repositories import (EmployeeRepository)
+from apps.authcore.repositories import (EmployeeRepository)
 
 from common.apiexceptions.authcore import (
     EmailRequired,

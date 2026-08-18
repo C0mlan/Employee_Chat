@@ -27,7 +27,18 @@ REST_FRAMEWORK = {
 
     "EXCEPTION_HANDLER": (
         "common.apiexceptions.authcore.custom_exception_handler"
-    )
+    ),
+
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
+    },
+
 }
 
 SIMPLE_JWT = {
@@ -54,8 +65,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     #local apps
-    'authcore',
-    'messaging'
+    'apps.authcore',
+    'apps.messaging'
 ]
 
 # ---------------------------------
@@ -74,6 +85,11 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'config.urls'
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
 
 TEMPLATES = [
     {
