@@ -41,3 +41,14 @@ class AuthenticationResponses:
             data=data,
             status_code=status.HTTP_200_OK,
         )
+
+
+class MessagingResponses:
+    @staticmethod
+    def conversation_created(data):
+        return ApiSuccessResponse.build(
+            message="Conversation created successfully.",
+            response_code="CONVERSATION_CREATED",
+            data=data,
+            status_code=status.HTTP_201_CREATED,
+        )
