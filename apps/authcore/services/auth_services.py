@@ -1,4 +1,4 @@
-from authcore.repositories import EmployeeRepository
+from apps.authcore.repositories import EmployeeRepository
 from django.contrib.auth import authenticate
 from common.validators.authcore.email_validator import EmailValidator
 from common.apiexceptions.authcore import InvalidCredentials

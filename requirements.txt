@@ -9,3 +9,6 @@ pytest-cov
 pytest-django
 hiredis>=2.3.0
 python-dotenv
+channels[daphne]
+channels-redis
+asgiref

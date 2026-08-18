@@ -40,6 +40,6 @@ def regular_user(db):
         last_name ="doe",
         email="john@example.com",
         password="StrongPassword123!",
-        role= "Employee",
+        role= Roles.EMPLOYEE,
         
     )
