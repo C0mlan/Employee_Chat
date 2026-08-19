@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 from common.constants.roles import Roles
 from common.constants.status import Status
+from common.constants.department import Department
 
 
 class CustomUserManager(BaseUserManager):
@@ -23,6 +24,9 @@ class CustomUserManager(BaseUserManager):
     def create_superuser(self, email, password, **extra_fields):
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
+        extra_fields["role"] = Roles.ADMIN
+        extra_fields["dept"] = Department.EXEMPT
+        
         return self._create_user(email, password, **extra_fields)
 
 
@@ -33,6 +37,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=30) 
     last_name = models.CharField(max_length=30) 
     role = models.CharField(max_length=20, choices=Roles.CHOICES, default='Roles.EMPLOYEE')
+    dept = models.CharField(max_length=25, choices=Department.CHOICES, default='Department.ENGINEERING')
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)

@@ -17,10 +17,9 @@ ALLOWED_HOSTS = ["*"] #allow everything for now in dev
 
 
 REST_FRAMEWORK = {
-    # "DEFAULT_AUTHENTICATION_CLASSES": (
-        
-    #     'authcore.servicess.permission.JWTAuthentication',
-    # ),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
@@ -28,7 +27,18 @@ REST_FRAMEWORK = {
 
     "EXCEPTION_HANDLER": (
         "common.apiexceptions.authcore.custom_exception_handler"
-    )
+    ),
+
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "100/hour",
+        "user": "1000/hour",
+    },
+
 }
 
 SIMPLE_JWT = {
@@ -41,6 +51,8 @@ SIMPLE_JWT = {
 # ---------------------------------
 
 INSTALLED_APPS = [
+    'daphne',
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -53,7 +65,8 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 
     #local apps
-    'authcore',
+    'apps.authcore',
+    'apps.messaging'
 ]
 
 # ---------------------------------
@@ -73,6 +86,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+CSRF_TRUSTED_ORIGINS = [
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -89,6 +107,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+ASGI_APPLICATION = 'config.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
+    },
+}
 
 
 # ---------------------------------
@@ -126,7 +155,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # ---------------------------------
 # Internationalization
 # ---------------------------------
@@ -150,3 +178,7 @@ STATIC_URL = 'static/'
 # ---------------------------------
 CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+
+
+
+

@@ -1,12 +1,14 @@
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
-from authcore.repositories import (EmployeeRepository)
+from apps.authcore.repositories import (EmployeeRepository)
 
 from common.apiexceptions.authcore import (
     EmailRequired,
     InvalidEmailFormat,
     EmailAlreadyExists,
+    InvalidCredentials
 )
+
 
 class EmailValidator:
 
@@ -44,3 +46,10 @@ class EmailValidator:
                     "employee with this email already exists."
                 }
             )
+
+    @staticmethod
+    def validate_login_email(email):
+        '''this will return exception when '''
+        if not email:
+            raise InvalidCredentials()
+        return email

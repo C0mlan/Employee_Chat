@@ -35,13 +35,20 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     
-# class LoginSerializer(serializers.ModelSerializer):
-#     email = serializers.EmailField()
-#     password = serializers.CharField(write_only=True)
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False,
+        allow_blank=True,
+        allow_null=True,)
+    password = serializers.CharField(write_only=True,required=False,
+        allow_blank=True,
+        allow_null=True,)
 
-#     class Meta:
-#         model = User
-#         fields = ['email', 'password']
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+
+    def validate_email(self, value):
+        return EmailValidator.validate_login_email(value)
 
 # class RefreshSerializer(serializers.Serializer):
 #     refresh_token = serializers.CharField()

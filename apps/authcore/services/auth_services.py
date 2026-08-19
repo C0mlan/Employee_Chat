@@ -1,8 +1,10 @@
-from authcore.repositories import EmployeeRepository
+from apps.authcore.repositories import EmployeeRepository
+from django.contrib.auth import authenticate
 from common.validators.authcore.email_validator import EmailValidator
+from common.apiexceptions.authcore import InvalidCredentials
 from django.utils import timezone
 from django.db import transaction
-
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 
@@ -37,5 +39,28 @@ class AuthService:
 
         return f"EMP-{year}-{number:05d}"
 
+    @staticmethod
+    def login_user(email, password):
+        user = EmployeeRepository.exists_by_email(email)
+        if not user:
+            raise InvalidCredentials()
 
+        auth_user = authenticate(email=email, password=password)
+
+        if not auth_user:
+            raise InvalidCredentials()
+
+        tokens = AuthService._generate_tokens(auth_user)
+
+        return tokens
+
+    @staticmethod
+    def _generate_tokens(user):
+        refresh = RefreshToken.for_user(user)
+        refresh["role"] = user.role
+        access = refresh.access_token
+        return{
+            "access": str(access),
+            "refresh": str(refresh)
+        }
     

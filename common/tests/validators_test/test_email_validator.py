@@ -28,7 +28,7 @@ class TestValidateEmail:
             EmailValidator.validate_email("invalid-email")
 
 
-    @patch("authcore.repositories.EmployeeRepository.exists_by_email")
+    @patch("apps.authcore.repositories.EmployeeRepository.exists_by_email")
     def test_existing_email_raises_exception(self, mock_exists):
         mock_exists.return_value = True
 
@@ -37,7 +37,7 @@ class TestValidateEmail:
                 "test@example.com"
             )
 
-    @patch("authcore.repositories.EmployeeRepository.exists_by_email")
+    @patch("apps.authcore.repositories.EmployeeRepository.exists_by_email")
     def test_new_email_passes(self, mock_exists):
         mock_exists.return_value = False
 
