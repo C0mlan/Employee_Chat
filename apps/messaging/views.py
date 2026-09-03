@@ -9,6 +9,11 @@ from common.response.authcore_response import  MessagingResponses
 from rest_framework.permissions import IsAuthenticated
 from .permissions import CanCreateGroup
 
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 class CreateConversationAPI(APIView):
     permission_classes = [CanCreateGroup]
@@ -28,3 +33,20 @@ class CreateConversationAPI(APIView):
             'type': conversation.conversation_type,
             'group_name': conversation.group_name,
             'participant_count': conversation.participants.count()})
+from .serializers import SendMessageSerializer
+from .services.message_services import MessageService
+
+class SendGroupMessage(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        serializer = SendMessageSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        data["sender_id"] = request.user.id
+        message_obj, created = MessageService.create_and_send_message(**data)
+        return Response(
+            {
+                "status": True,
+                "message_id": str(message_obj.id),
+                "created": created,
+                "created_at": message_obj.created_at.isoformat(),}, status=status.HTTP_200_OK)

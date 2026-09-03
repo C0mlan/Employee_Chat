@@ -12,3 +12,5 @@ python-dotenv
 channels[daphne]
 channels-redis
 asgiref
+django-request-id
+django-user-agents
