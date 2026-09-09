@@ -27,9 +27,15 @@ jobs:
           --health-retries=5
 
       redis:
-        image: redis:alpine
+        image: redis:latest
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
         ports:
           - 6379:6379
+        
     env:
       DEBUG: True
       SECRET_KEY: testsecret
