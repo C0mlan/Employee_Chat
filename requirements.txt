@@ -14,3 +14,4 @@ channels-redis
 asgiref
 django-request-id
 django-user-agents
+pytest-asyncio==1.3.0
