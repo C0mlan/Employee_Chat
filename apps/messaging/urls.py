@@ -3,6 +3,6 @@ from .views import CreateConversationAPI, SendGroupMessage
 
 urlpatterns = [
     path('conversations/group/',  CreateConversationAPI.as_view(), name="create_group_conversation"),
-    path('send_message/',  SendGroupMessage.as_view(), name="send_message"),
+    path('send_message/',  SendGroupMessage.as_view(), name="send_group_message"),
    
 ]

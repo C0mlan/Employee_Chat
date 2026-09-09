@@ -1,6 +1,6 @@
 import json
 import logging
-from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth.models import AnonymousUser
 from apps.messaging.models import ConversationParticipant
@@ -9,7 +9,26 @@ logger = logging.getLogger(__name__)
 
 # from .models import Message
 
+@sync_to_async
+def _check_participant_sync(conversation_id, user_id):
+    return ConversationParticipant.objects.filter(
+        conversation_id=conversation_id,
+        user_id=user_id,
+    ).exists()
+
 class ChatConsumer(AsyncWebsocketConsumer):
+    """Manages real-time WebSocket connections for group and direct chat conversations.
+
+    Handles connection lifecycle hooks, user authorization validation, incoming client frame
+    parsing, channel group subscription management, and error handling.
+
+    Attributes:
+        CLOSE_NORMAL (int): Standard WebSocket closure code (1000).
+        CLOSE_GOING_AWAY (int): Endpoint going away code (1001).
+        CLOSE_PROTOCOL_ERROR (int): Protocol error closure code (1002).
+        CLOSE_UNAUTHORIZED (int): Custom closure code for unauthorized access (4003).
+        CLOSE_SERVER_ERROR (int): Custom closure code for internal server errors (4011).
+    """
     CLOSE_NORMAL = 1000
     CLOSE_GOING_AWAY = 1001
     CLOSE_PROTOCOL_ERROR = 1002
@@ -17,20 +36,38 @@ class ChatConsumer(AsyncWebsocketConsumer):
     CLOSE_SERVER_ERROR = 4011
 
     async def connect(self):
+        """Handles new incoming WebSocket connection attempts.
+
+        Extracts parameters from connection scope, validates conversation membership,
+        and adds valid connections to the corresponding Redis/channel group.
+
+        Returns:
+            None
+        """
+        logger.info("1. connect() called")
+        headers = dict(self.scope.get("headers", []))
+        user_agent_raw = headers.get(b"user-agent", b"").decode("utf-8")
+        ip_address = self.scope["client"][0] if self.scope.get("client") else None
+
         self.conversation_id = self.scope["url_route"]["kwargs"]["conversation_id"]
+
         self.conversation_group_name = f"conversation_{self.conversation_id}"
+        logger.info("2. conversation_id=%s",self.conversation_id)
         self.user_id = self.scope["user_id"]
+        logger.info("3. user_id=%s", self.user_id)
         if not self.conversation_id:
             logger.warning("WebSocket connection rejected: missing conversation_id",
                 extra={
                     "user_id": self.user_id,
-                    "browser": user_agent.browser.family,
+                    "browser":  user_agent_raw,
                     "ip_address": ip_address
                     },
             )
             await self.close(code=self.CLOSE_PROTOCOL_ERROR)
             return
+        logger.info("4. Checking participant")
         is_participant = await self.check_participant()
+        logger.info("5. Participant check completed: %s",is_participant,)
 
         if not is_participant:
             logger.warning(
@@ -38,7 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 extra={
                     "conversation_id": self.conversation_id,
                     "user_id": self.user_id,
-                    "browser": user_agent.browser.family,
+                    "browser":  user_agent_raw,
                     "ip_address": ip_address
                 },
             )
@@ -59,6 +96,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
             },
         )
     async def disconnect(self, close_code):
+        """Handles WebSocket disconnect events and performs cleanup.
+
+        Removes connection channel name from the group and logs the exit code.
+
+        Args:
+            close_code: Integer close code indicating why connection terminated.
+
+        Returns:
+            None
+        """
         try:
             logger.info("WebSocket disconnecting",
                 extra={
@@ -84,6 +131,18 @@ class ChatConsumer(AsyncWebsocketConsumer):
             )
 
     async def receive(self, text_data=None, bytes_data=None):
+        """Processes incoming data frames received from WebSocket clients.
+
+        Parses raw text or byte data into JSON, validates payload structures,
+        enforces max character constraints, and broadcasts frames to group layers.
+
+        Args:
+            text_data: Optional raw JSON string received from client.
+            bytes_data: Optional UTF-8 encoded byte array received from client.
+
+        Returns:
+            None
+        """
         try:
             # Parse incoming data
             if text_data:
@@ -98,11 +157,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         "user_id": str(self.user_id),
                     },
                 )
-            await self.send_json_error(
-                    code="INVALID_MESSAGE",
-                    message="Message cannot be empty"
-                )
-            return
+                await self.send_json_error(
+                        code="INVALID_MESSAGE",
+                        message="Message cannot be empty"
+                    )
+                return
             if "message" not in data:
                 logger.warning(
                     "WebSocket message missing 'message' field",
@@ -159,6 +218,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 
 
     async def chat_message(self, event):
+        """Handler for channel layer group messages with type 'chat_message'.
+
+        Serializes and pushes the broadcast message frame to the client WebSocket.
+
+        Args:
+            event: Event dictionary sent by channel layer containing message data.
+
+        Returns:
+            None
+        """
         try:
             logger.info("WebSocket delivering message",
                 extra={
@@ -182,6 +251,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 exc_info=True,
             )
     async def send_json_error(self, code, message):
+        """Helper method to format and send structured JSON error frames to client.
+
+        Args:
+            code: Unique string code classifying error state (e.g., 'INVALID_FORMAT').
+            message: Human-readable error description string.
+
+        Returns:
+            None
+        """
         try:
             await self.send(
                 text_data=json.dumps({
@@ -212,12 +290,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 },
                 exc_info=True,)
 
-    @database_sync_to_async
-    def check_participant(self):
+
+    async def check_participant(self):
+        """Verifies whether the current connected user belongs to the conversation.
+
+        Queries ConversationParticipant in a synchronous context wrapped for async.
+
+        Returns:
+            bool: True if membership record exists, False otherwise.
+
+        Raises:
+            Exception: Re-raises database access errors after logging details.
+        Async wrapper around the DB check."""
         try:
-            return ConversationParticipant.objects.filter(
-                conversation_id=self.conversation_id,user_id=self.user_id,
-            ).exists()
+            return await _check_participant_sync(self.conversation_id, self.user_id)
         except Exception as e:
             logger.error(
                 "Database check_participant failed: %s",
@@ -229,3 +315,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 exc_info=True,
             )
             raise
+       
+class EchoConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def receive(self, text_data=None, bytes_data=None):
+        await self.send(text_data=text_data or bytes_data)

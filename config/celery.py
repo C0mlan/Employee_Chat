@@ -10,6 +10,7 @@ app = Celery("config")
 #Load settings from Django settings.py, using `CELERY_` namespace
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
+
 #Auto-discover tasks from all installed apps
 app.autodiscover_tasks()
 

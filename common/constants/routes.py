@@ -6,3 +6,4 @@ class RouteNames:
     
     class Messaging:
         CREATEGROUPCONVERSATION = ("create_group_conversation")
+        SENDGROUPMESSAGE = ("send_group_message")

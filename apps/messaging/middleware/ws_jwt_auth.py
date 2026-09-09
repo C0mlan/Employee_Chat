@@ -25,16 +25,19 @@ class WebSocketJWTAuthMiddleware(BaseMiddleware):
     CLOSE_SERVER_ERROR = 4011
 
     async def __call__(self, scope, receive, send):
+        user_agent = self._get_user_agent(scope)
+        ip_address = scope["client"][0] if scope.get("client") else None
+        
+        browser_family = getattr(user_agent, "browser", None)
+        browser = getattr(browser_family, "family", "Unknown") if browser_family else "Unknown"
         try:
             token = self._get_token_from_scope(scope)
-            user_agent = self._get_user_agent(scope)
-            ip_address = (scope["client"][0] if scope.get("client")else None)
             if token is None:
                 logger.warning("WebSocket authentication failed: missing token",
 
                     extra={
                         "path": scope.get("path"),
-                        "browser": user_agent.browser.family,
+                        "browser": browser,
                         "ip_address": ip_address
                     },
                 )
@@ -50,7 +53,7 @@ class WebSocketJWTAuthMiddleware(BaseMiddleware):
                     extra={
                         "path": scope.get("path"),
                         "error_type": type(e).__name__,
-                        "browser": user_agent.browser.family,
+                        "browser": browser,
                         "ip_address": ip_address
                     },
                 )
