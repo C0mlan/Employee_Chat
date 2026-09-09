@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     # Third-party
     'rest_framework',     # Django REST framework
     'rest_framework_simplejwt',
+    'request_id',
 
     #local apps
     'apps.authcore',
@@ -75,6 +76,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'authcore.User'  # Custom user model reference
 
 MIDDLEWARE = [
+    'request_id.middleware.RequestIdMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -83,6 +85,55 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+# ---------------------------------
+# Logging Configuration
+# ---------------------------------
+
+REQUEST_ID_HEADER = None
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {name} [request_id={request_id}] {message}",
+            "style": "{",
+        },
+    },
+
+    "filters": {
+        "request_id": {
+            "()": "common.logging.filters.RequestIdFilter",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+            "filters": ["request_id"],
+        },
+    },
+
+    "loggers": {
+        "apps": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+
+        "celery": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}
+
+
 
 ROOT_URLCONF = 'config.urls'
 
@@ -178,6 +229,8 @@ STATIC_URL = 'static/'
 # ---------------------------------
 CELERY_BROKER_URL = "redis://redis:6379/0"
 CELERY_RESULT_BACKEND = "redis://redis:6379/0"
+
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 
 
 

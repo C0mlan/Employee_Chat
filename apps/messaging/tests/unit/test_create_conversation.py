@@ -13,8 +13,8 @@ import secrets
 @pytest.mark.unit
 class TestGroupConversationunit:
 
-    def test_create_group_conversation_serializer_accepts_valid_participants(self, regular_user, create_user):
-        user1 = create_user(
+    def test_create_group_conversation_serializer_accepts_valid_participants(self, regular_user, user_factory):
+        user1 = user_factory(
             first_name="jane",
             last_name="doe",
             email="another@user1.com",
@@ -23,7 +23,7 @@ class TestGroupConversationunit:
 
         )
 
-        user2 = create_user(
+        user2 = user_factory(
             first_name="john",
             last_name="doe",
             email="another@user2.com",
