@@ -93,12 +93,6 @@ jobs:
         run: |
           python manage.py migrate
 
-      # Then add this before integration tests:
-      - name: Verify Redis connectivity
-        run: |
-          apt-get update && apt-get install -y redis-tools
-          redis-cli -h localhost ping
-
       # -----------------------------------------
       # UNIT TESTS
       # -----------------------------------------
