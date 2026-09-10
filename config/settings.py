@@ -161,11 +161,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 ASGI_APPLICATION = 'config.asgi.application'
 
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("redis", 6379)],
+            "hosts": [REDIS_URL],
         },
     },
 }
@@ -227,7 +229,7 @@ STATIC_URL = 'static/'
 # ---------------------------------
 # Celery
 # ---------------------------------
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
