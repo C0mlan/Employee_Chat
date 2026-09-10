@@ -12,15 +12,15 @@ from common.constants.conversation_type import Type
 @pytest.mark.integration
 class TestGroupConversationIntegration:
     
-    def test_create_group_conversation_api_success(api_client, authenticated_admin_client,create_user):
+    def test_create_group_conversation_api_success(api_client, authenticated_admin_client, user_factory):
         create_group_conversation = reverse(RouteNames.Messaging.CREATEGROUPCONVERSATION)
-        user1 = create_user(
+        user1 =  user_factory(
             email="another@user1.com",
             password= "StrongPassword123",
             emp_id=secrets.token_hex(4),
 
         )
-        user2 = create_user(
+        user2 =  user_factory(
             email="another@user2.com",
             password= "StrongPassword123",
             emp_id=secrets.token_hex(4),
@@ -44,16 +44,16 @@ class TestGroupConversationIntegration:
         assert response.data["success"] is True
         assert response.data["data"]["group_name"] == "Engineering Team"
         assert response.data["data"]["type"] == "GROUP"
-        assert response.data["data"]["participant_count"] == 2
+        assert response.data["data"]["participant_count"] == 3
 
-    def test_create_group_conversation(self, regular_user, create_user):
-        participant_1 =create_user(
+    def test_create_group_conversation(self, regular_user,  user_factory):
+        participant_1 = user_factory(
             email="employee1@example.com",
             password="Password123!",
             emp_id=secrets.token_hex(4),
             )
 
-        participant_2 = create_user(
+        participant_2 =  user_factory(
             email="employee2@example.com",
             password="Password123!",
              emp_id=secrets.token_hex(4),)

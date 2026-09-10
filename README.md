@@ -130,6 +130,84 @@ docker compose exec web pytest -v
 
 ## Architecture
 
+## Project Stucture
+
+```text
+.Employee_Chat
+├── README.md
+├── apps
+│   ├── authcore                    # Authentication & user management Module         
+│   │   ├── __init__.py
+│   │   ├── admin.py
+│   │   ├── apps.py
+│   │   ├── migrations
+│   │   ├── models
+│   │   ├── repositories.py
+│   │   ├── serializers.py
+│   │   ├── services
+│   │   ├── tests
+│   │   ├── urls.py
+│   │   └── views.py
+│   ├── conftest.py
+│   └── messaging                   # Conversation & Messaging service
+│       ├── __init__.py
+│       ├── admin.py
+│       ├── apps.py
+│       ├── consumers.py
+│       ├── middleware
+│       ├── migrations
+│       ├── models.py
+│       ├── permissions.py
+│       ├── repositories
+│       ├── routing.py
+│       ├── serializers.py
+│       ├── services
+│       ├── tests
+│       ├── urls.py
+│       └── views.py
+├── common              # Shared exceptions, responses, constants, and validators
+│   ├── apiexceptions
+│   │   ├── authcore.py
+│   │   ├── base.py
+│   │   └── messaging.py
+│   ├── constants
+│   │   ├── conversation_status.py
+│   │   ├── conversation_type.py
+│   │   ├── department.py
+│   │   ├── roles.py
+│   │   ├── routes.py
+│   │   └── status.py
+│   ├── response
+│   │   └── authcore_response.py
+│   ├── tests
+│   │   ├── conftest.py
+│   │   ├── test_apiexceptions.py
+│   │   └── validators_test
+│   └── validators
+│       ├── authcore
+│       ├── base
+│       └── messaging
+├── config
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── celery.py
+│   ├── settings.py
+│   ├── urls.py
+│   └── wsgi.py
+├── docker          # Containerization & reverse proxy setup (Docker, Compose, nginx)
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   ├── entrypoint.sh
+│   └── nginx
+│       └── nginx.conf
+├── docs
+│   ├── authcore.md
+│   └── sdd.md
+├── manage.py
+├── pytest.ini
+└── requirements.txt
+```
+
 
 ## API Documentation
 
@@ -143,5 +221,3 @@ authentication requirements, and error responses, see:
 
 
 [- API Reference](docs/api_documentation.md)
-
-

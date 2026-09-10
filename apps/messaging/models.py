@@ -52,9 +52,9 @@ class ConversationParticipant(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.SET_NULL, null=True, related_name="participants")
     user =models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, related_name="conversation_participations")
     joined_at = models.DateTimeField(auto_now_add=True)
-    # last_read_message = models.ForeignKey(
-    #     "Message",on_delete=models.SET_NULL,null=True,blank=True,related_name="+",
-    #     )
+    last_read_message = models.ForeignKey(
+        "Message",on_delete=models.SET_NULL,null=True,blank=True,related_name="+",
+        )
     created_at = models.DateTimeField(auto_now_add=True)
     class Meta:
         constraints = [
@@ -65,20 +65,27 @@ class ConversationParticipant(models.Model):
         ]
 
 
-# class Message(models.Model):
-#     conversation = models.ForeignKey(
-#         Conversation, on_delete=models.CASCADE,related_name="messages",
-#         )
-#     sender = models.ForeignKey(
-#         settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name="sent_messages",)
-#     content = models.TextField()
-#     created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
+class Message(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey(
+        Conversation, on_delete=models.CASCADE,related_name="messages")
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,on_delete=models.PROTECT,related_name="sent_messages")
+    content = models.TextField()
+    idempotency_key = models.UUIDField(unique=True, db_index=True,default=uuid.uuid4,editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-#     class Meta:
-#         indexes = [
-#             models.Index(
-#                 fields=["conversation", "-created_at"],
-#                 name="message_conversation_created_idx",
-#             ),
-#         ]
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['conversation', 'sender', 'idempotency_key'],
+                name='unique_message_per_conversation_sender_idempotency'
+            )
+        ]
+        indexes = [
+            models.Index(
+                fields=["conversation", "-created_at"],
+                name="message_convo_created_idx",
+            ),
+        ]
