@@ -1,17 +1,13 @@
 # config/settings/test.py
 from .settings import *  
 
-# Override Redis with in-memory for tests
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-    }
-}
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-# Use in-memory channel layer for tests
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer'
-    }
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": ["REDIS_URL"],
+        },
+    },
 }
