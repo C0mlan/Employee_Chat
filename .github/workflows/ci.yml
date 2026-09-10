@@ -5,7 +5,7 @@ on:
     branches: ["master", "dev"]
 
   pull_request:
-    branches: ["main", "dev"]
+    branches: ["master", "dev"]
 
 jobs:
   test:
@@ -46,6 +46,7 @@ jobs:
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
       REDIS_URL: redis://localhost:6379/0
+      DJANGO_SETTINGS_MODULE: config.settings.test
 
     steps:
       - name: Checkout code
@@ -71,6 +72,19 @@ jobs:
           echo "Checking pytest naming conventions..."
 
           find . -type f -name "test_*.py"
+      
+      - name: Debug Django settings
+        run: |
+          python -c "
+          import os
+          import django
+          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.test')
+          django.setup()
+          from django.conf import settings
+          print('Settings module:', settings.SETTINGS_MODULE)
+          print('REDIS_URL env:', os.getenv('REDIS_URL'))
+          print('CHANNEL_LAYERS:', settings.CHANNEL_LAYERS)
+          "
 
       # -----------------------------------------
       # RUN MIGRATIONS
