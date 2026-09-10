@@ -35,6 +35,7 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
+
         
     env:
       DEBUG: True
@@ -44,7 +45,10 @@ jobs:
       POSTGRES_PASSWORD: empchat_password
       POSTGRES_HOST: localhost
       POSTGRES_PORT: 5432
+      # Redis
+      REDIS_HOST: localhost
       REDIS_URL: redis://localhost:6379/0
+      DJANGO_SETTINGS_MODULE: config.test
 
     steps:
       - name: Checkout code
@@ -70,7 +74,8 @@ jobs:
           echo "Checking pytest naming conventions..."
 
           find . -type f -name "test_*.py"
-
+      
+      
       # -----------------------------------------
       # RUN MIGRATIONS
       # -----------------------------------------
